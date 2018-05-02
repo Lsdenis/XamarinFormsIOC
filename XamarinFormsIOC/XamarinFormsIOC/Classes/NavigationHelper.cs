@@ -26,6 +26,15 @@ namespace XamarinFormsIOC.Classes
             set => Application.Current.MainPage = value;
         }
 
+        public async Task NavigateAsync<TViewModel>(
+            PageNavigationType navigationType = PageNavigationType.Default,
+            bool awaitDataBeenLoaded = false,
+            Action<TViewModel> initAction = null)
+            where TViewModel : BaseViewModel
+        {
+            await ExecuteNavigationAsync(navigationType, awaitDataBeenLoaded, initAction);
+        }
+
         public async Task NavigateAsync<TViewModel, TModel>(
             TModel data,
             PageNavigationType navigationType = PageNavigationType.Default,
@@ -35,6 +44,17 @@ namespace XamarinFormsIOC.Classes
         {
             await ExecuteNavigationAsync<TViewModel>(navigationType, awaitDataBeenLoaded,
                 viewModel => { viewModel.InitModel(data); });
+        }
+
+        public async Task NavigateAsync<TPage>(
+            BaseViewModel viewModel,
+            PageNavigationType navigationType = PageNavigationType.Default)
+            where TPage : Page
+        {
+            var page = (Page) Activator.CreateInstance(typeof(TPage));
+            page.BindingContext = viewModel;
+
+            await PerformNavigationActionAsync(page, navigationType);
         }
 
         private async Task ExecuteNavigationAsync<TViewModel>(
@@ -103,14 +123,6 @@ namespace XamarinFormsIOC.Classes
                     break;
                 }
             }
-        }
-
-        public async Task NavigateAsync<TViewModel>(
-            PageNavigationType navigationType = PageNavigationType.Default,
-            bool awaitDataBeenLoaded = false)
-            where TViewModel : BaseViewModel
-        {
-            await ExecuteNavigationAsync<TViewModel>(navigationType, awaitDataBeenLoaded);
         }
 
         public async Task PopAsync(PageNavigationType navigationType = PageNavigationType.Default)
